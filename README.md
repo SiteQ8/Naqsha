@@ -112,7 +112,7 @@ approved -> cancelled "cancel"
 
 Every diagram, in the browser and in the exported file, comes with the same viewer.
 
-Pan by dragging the background and zoom with the wheel or the plus, minus, and reset controls. Click a node to focus it: Naqsha follows the edges to compute everything it reaches downstream and everything that reaches it upstream, lights that path, and dims the rest. Click the background to clear. Search filters the nodes by name. The theme button switches between dark and light. Export gives you a clean SVG, or a PNG at twice the resolution, always the full diagram rather than the current pan and zoom. In the generated file the keyboard works too: `/` to search, `T` for theme, `+`, `-`, and `0` to zoom, and `Escape` to clear.
+Pan by dragging the background and zoom with the wheel or the plus, minus, and reset controls. Click a node to focus it: Naqsha follows the edges to compute everything it reaches downstream and everything that reaches it upstream, lights that path, and dims the rest. Click the background to clear. Search filters the nodes by name. The theme button switches between dark and light. Export gives you a clean SVG, or a PNG at twice the resolution, always the full diagram rather than the current pan and zoom. In the generated file the keyboard works too: `/` to search, `T` for theme, `F` for flow, `+`, `-`, and `0` to zoom, and `Escape` to clear.
 
 ![Tracing what a node reaches](docs/trace.png)
 
@@ -139,6 +139,10 @@ naqsha diff before.naqsha after.naqsha -o change.html
 ![A before and after diff](docs/diff.png)
 
 Diffing is for the graph type.
+
+## Motion
+
+The Flow button, or the `F` key in a generated file, animates every connection so its dashes travel toward the arrowhead. It is a quick way to show direction during a walkthrough or a presentation, and it works in every diagram type, on graph edges, sequence messages, and state transitions alike. It is off by default and honors a reduced motion preference, so it never animates for someone who has asked their system to keep motion still.
 
 ## Install and use
 

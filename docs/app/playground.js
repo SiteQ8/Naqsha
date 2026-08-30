@@ -109,6 +109,7 @@ const stage = document.getElementById("nq-stage");
 const ta = document.getElementById("nq-source");
 const err = document.getElementById("nq-error");
 let api = null;
+let flowOn = false;
 
 function render() {
   let result;
@@ -123,6 +124,7 @@ function render() {
   if (api) api.destroy();
   stage.innerHTML = result.svg;
   api = window.NaqshaViewer.init(root, result.model.adj, { name: "naqsha", keys: false, title: result.model.title || result.ir.title || "Diagram" });
+  if (api && flowOn) api.setFlow(true);
 }
 
 let timer = null;
@@ -140,6 +142,7 @@ document.getElementById("nq-zreset").onclick = function () { if (api) api.resetV
 document.getElementById("nq-svg").onclick = function () { if (api) api.exportSVG(); };
 document.getElementById("nq-png").onclick = function () { if (api) api.exportPNG(); };
 document.getElementById("nq-card").onclick = function () { if (api) api.exportCard(); };
+document.getElementById("nq-flow").onclick = function () { flowOn = !flowOn; if (api) api.setFlow(flowOn); this.classList.toggle("nq-on", flowOn); };
 
 // example switcher
 for (const key of Object.keys(EXAMPLES)) {

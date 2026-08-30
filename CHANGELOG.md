@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Finite motion. A Flow button, or the F key in a generated file, animates every
+  connection so its dashes travel toward the arrowhead, a quick way to show
+  direction during a walkthrough. It works across all diagram types, on graph
+  edges, sequence messages, and state transitions, is off by default, and honors
+  a reduced motion preference so it never animates for someone who asked their
+  system to keep motion still.
+
 ## 0.4.0
 
 - Before and after diff. `naqsha diff before.naqsha after.naqsha` compares two

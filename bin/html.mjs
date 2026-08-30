@@ -66,6 +66,7 @@ export function toHTML(model, svg, options) {
       <button class="nq-btn" id="nq-zreset" title="Reset view (0)">Reset</button>
       <button class="nq-btn" id="nq-svg" title="Export SVG">SVG</button>
       <button class="nq-btn" id="nq-png" title="Export PNG">PNG</button>
+      <button class="nq-btn" id="nq-flow" title="Animate flow (F)">Flow</button>
       <button class="nq-btn" id="nq-card" title="Export a 1200 by 630 share image">Card</button>
       <span class="nq-spacer"></span>
       <span class="nq-hint">${esc(hint)}</span>
@@ -104,6 +105,7 @@ ${toolbar}
   document.getElementById("nq-zreset").onclick = function(){ api.resetView(); };
   document.getElementById("nq-svg").onclick = function(){ api.exportSVG(); };
   document.getElementById("nq-png").onclick = function(){ api.exportPNG(); };
+  document.getElementById("nq-flow").onclick = function(){ var on = api.toggleFlow(); this.classList.toggle("nq-on", on); };
   document.getElementById("nq-card").onclick = function(){ api.exportCard(); };
   ${isDiff ? `
   function nqMode(m){ api.setMode(m); ["before","after","delta"].forEach(function(x){ var b=document.getElementById("nq-m-"+x); if(b) b.classList.toggle("nq-on", x===m); }); }

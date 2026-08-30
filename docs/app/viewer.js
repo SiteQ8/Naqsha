@@ -168,6 +168,9 @@
       svg.classList.remove("nq-mode-before", "nq-mode-after", "nq-mode-delta");
       svg.classList.add("nq-mode-" + (mode || "delta"));
     }
+    let flowing = false;
+    function setFlow(on) { flowing = !!on; if (flowing) svg.classList.add("nq-flow"); else svg.classList.remove("nq-flow"); }
+    function toggleFlow() { setFlow(!flowing); return flowing; }
 
     // export: inline computed styles onto a clone so the SVG stands alone
     function standaloneSVG() {
@@ -266,7 +269,7 @@
       img.src = blobUrl;
     }
 
-    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, setMode, exportSVG, exportPNG, exportCard, state };
+    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, setMode, setFlow, toggleFlow, exportSVG, exportPNG, exportCard, state };
 
     // keyboard shortcuts when this viewer owns the page (standalone file)
     let onKey = null;
@@ -277,6 +280,7 @@
           return;
         }
         if (e.key === "t" || e.key === "T") toggleTheme();
+        else if (e.key === "f" || e.key === "F") toggleFlow();
         else if (e.key === "+" || e.key === "=") zoomBy(1.15);
         else if (e.key === "-") zoomBy(1 / 1.15);
         else if (e.key === "0") resetView();
