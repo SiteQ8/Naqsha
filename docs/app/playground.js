@@ -5,6 +5,25 @@
 import { build } from "./engine.mjs";
 
 const EXAMPLES = {
+  state: `type state
+title Order lifecycle
+direction LR
+
+initial draft
+state draft "Draft"
+state submitted "Submitted"
+state approved "Approved"
+state shipped "Shipped"
+final delivered "Delivered"
+final cancelled "Cancelled"
+
+draft -> submitted "submit"
+submitted -> approved "approve"
+submitted -> draft "request changes"
+submitted -> cancelled "cancel"
+approved -> shipped "ship"
+shipped -> delivered "deliver"
+approved -> cancelled "cancel"`,
   sequence: `type sequence
 title Checkout
 participant user "User"

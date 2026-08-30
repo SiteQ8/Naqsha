@@ -81,6 +81,33 @@ web --> user "receipt"
 
 The viewer works here too. Click a participant to light every message it takes part in and the participants at the other end, and search, theme, and export behave the same as in a graph.
 
+## State machines
+
+Set `type state`, or `type lifecycle`, for a state machine. States are boxes, transitions are labelled arrows, a small filled dot marks the initial state, and a final state gets a second inner outline. Because a state machine is a directed graph, the viewer treats it as one: click a state to trace every state reachable from it and every state that leads to it, which answers questions like where a stuck order can still go.
+
+```
+type state
+title Order lifecycle
+direction LR
+
+initial draft
+state draft "Draft"
+state submitted "Submitted"
+state approved "Approved"
+state shipped "Shipped"
+final delivered "Delivered"
+final cancelled "Cancelled"
+
+draft -> submitted "submit"
+submitted -> approved "approve"
+submitted -> draft "request changes"
+approved -> shipped "ship"
+shipped -> delivered "deliver"
+approved -> cancelled "cancel"
+```
+
+![A state machine](docs/state.png)
+
 ## The interactive viewer
 
 Every diagram, in the browser and in the exported file, comes with the same viewer.
@@ -133,9 +160,9 @@ naqsha version
 
 ## Honest scope
 
-Naqsha draws two diagram types today. The graph type covers architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges; its layout is a compact layered algorithm in the spirit of the Sugiyama method, a good automatic starting point rather than a hand tuned drawing, so a large or unusual graph may want splitting or a nudge in the source. The sequence type covers calls between participants over time. The viewer reflects the diagram you wrote, not a running system.
+Naqsha draws three diagram types today. The graph type covers architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges; its layout is a compact layered algorithm in the spirit of the Sugiyama method, a good automatic starting point rather than a hand tuned drawing, so a large or unusual graph may want splitting or a nudge in the source. The sequence type covers calls between participants over time. The state type covers a lifecycle or state machine: states, labelled transitions, an initial state, and final states. The viewer reflects the diagram you wrote, not a running system.
 
-A lifecycle or state diagram type, a data flow type, finite motion along edges, and a before and after comparison of two snapshots are the natural next steps, and the engine is built around a diagram type so they slot in cleanly. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
+A data flow type, finite motion along edges, and a before and after comparison of two snapshots are the natural next steps, and the engine is built around a diagram type so they slot in cleanly. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
 
 ## License
 

@@ -6,12 +6,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, basename } from "node:path";
 import { createServer } from "node:http";
 
-import { build, validate, parse, layout, renderSVG, layoutSequence, renderSequence, palette } from "../docs/app/engine.mjs";
+import { build, validate, parse, layout, renderSVG, layoutSequence, renderSequence, renderState, stateToGraph, palette } from "../docs/app/engine.mjs";
 import { toHTML, toCard } from "./html.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 const EXAMPLE = `title Payments platform
 direction LR
@@ -84,6 +84,8 @@ function cmdRender(args) {
   writeFileSync(out, html);
   const count = ir.type === "sequence"
     ? model.participants.length + " participants, " + model.steps.length + " steps"
+    : ir.type === "state"
+    ? model.nodes.length + " states, " + model.edges.length + " transitions"
     : model.nodes.length + " nodes, " + model.edges.length + " edges";
   console.log("wrote " + out + "  (" + count + ")");
   return 0;
@@ -100,6 +102,7 @@ function cmdCard(args) {
   const P = palette(theme);
   let model, svg;
   if (ir.type === "sequence") { model = layoutSequence(ir); svg = renderSequence(model, P); }
+  else if (ir.type === "state") { model = layout(stateToGraph(ir)); model.kind = "state"; model.initial = ir.initial; svg = renderState(model, P); }
   else { model = layout(ir); svg = renderSVG(model, P); }
   const card = toCard(model, svg, { theme });
   const out = argValue(args, "-o") || argValue(args, "--output") ||

@@ -114,3 +114,9 @@
 .nq-svg.nq-searching .nq-lifeline { opacity: .14; }
 .nq-svg.nq-searching .nq-msg { opacity: .14; }
 .nq-participant.nq-match .nq-pbox { stroke: var(--nq-hot-2); stroke-width: 2.2; }
+
+/* ---- state machines ---- */
+.nq-initial-dot { fill: var(--nq-edge); }
+.nq-final-ring { stroke: var(--nq-node-stroke); fill: none; }
+.nq-svg.nq-focusing .nq-initial { opacity: .2; }
+.nq-svg.nq-searching .nq-initial { opacity: .2; }

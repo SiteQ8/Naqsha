@@ -24,7 +24,7 @@ export function toCard(model, svg, options) {
   const W = 1200, H = 630, PAD = 56;
   const FONT = "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
   const title = model.title || options.title || "Diagram";
-  const kindLabel = (model.kind === "sequence" ? "sequence diagram" : "architecture diagram").toUpperCase();
+  const kindLabel = (model.kind === "sequence" ? "sequence diagram" : model.kind === "state" ? "state diagram" : "architecture diagram").toUpperCase();
   const dw = model.width, dh = model.height;
   const areaX = PAD, areaY = 120, areaW = W - 2 * PAD, areaH = H - areaY - 64;
   const inner = svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
@@ -46,7 +46,7 @@ export function toHTML(model, svg, options) {
   const name = slug(title);
   const light = options.theme === "light";
   const adj = JSON.stringify(model.adj || { out: {}, in: {} });
-  const hint = model.kind === "sequence" ? "click a participant to trace its messages" : "click a node to trace its reach";
+  const hint = model.kind === "sequence" ? "click a participant to trace its messages" : model.kind === "state" ? "click a state to trace where it leads" : "click a node to trace its reach";
 
   const toolbar = `
     <div class="nq-toolbar">
