@@ -1,0 +1,23 @@
+title Payments platform
+direction LR
+
+group edge "Edge"
+group core "Core services"
+
+node users "Users" shape=actor
+node cdn "CDN" group=edge
+node api "API gateway" group=edge
+node auth "Auth service" group=core
+node orders "Orders service" group=core
+node db "PostgreSQL" shape=store group=core
+node cache "Redis" shape=store group=core
+node bus "Event bus" shape=queue
+
+edge users -> cdn "https"
+edge cdn -> api "cache miss"
+edge api -> auth "verify token"
+edge api -> orders "place order"
+edge orders -> db "read and write"
+edge orders -> cache "read through"
+edge orders -> bus "emit events"
+edge bus -> orders "retry"

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naqsha: diagrams as code</title>
+<meta name="description" content="Turn a short text description of a system into a polished, self contained, interactive diagram. Pan and zoom, trace what a node reaches, search, theme, and export. Nothing you type leaves your browser.">
+<link rel="stylesheet" href="app/styles.css">
+<style>
+  html,body{margin:0;height:100%}
+  body{background:var(--nq-bg);color:var(--nq-text);font:14px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .page{max-width:1320px;margin:0 auto;padding:20px 20px 30px;display:flex;flex-direction:column;height:100vh;box-sizing:border-box}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .logo{width:30px;height:30px}
+  .brand h1{font-size:21px;margin:0}
+  .ver{color:var(--nq-dim);font-size:12px;border:1px solid var(--nq-line);border-radius:99px;padding:2px 9px;margin-left:2px}
+  .tag{color:var(--nq-dim);font-size:14px;margin:0 0 14px;max-width:96ch}
+  .cols{display:grid;grid-template-columns:minmax(280px,0.72fr) 1.28fr;gap:14px;flex:1;min-height:0}
+  @media(max-width:900px){.cols{grid-template-columns:1fr;overflow:auto}.editor textarea{min-height:220px}.nq-app{min-height:70vh}}
+  .editor{display:flex;flex-direction:column;min-height:0}
+  .editor .lbl{font-size:12px;color:var(--nq-dim);margin-bottom:6px}
+  .editor textarea{flex:1;min-height:0;width:100%;box-sizing:border-box;background:var(--nq-panel);color:var(--nq-text);border:1px solid var(--nq-line);border-radius:11px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.55;resize:none}
+  .exs{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .err{color:#f2607a;font-size:12.5px;margin-top:8px;font-family:ui-monospace,monospace;display:none}
+  .foot{color:var(--nq-dim);font-size:12px;margin-top:12px}
+  a{color:var(--nq-accent)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="3" y="6" width="9" height="7" rx="2" fill="#5a86ff" opacity=".8"/>
+        <rect x="3" y="19" width="9" height="7" rx="2" fill="#3fd6c8" opacity=".8"/>
+        <rect x="20" y="12" width="9" height="7" rx="2" fill="#a78bff" opacity=".85"/>
+        <path d="M12 9 H16 V15 H20 M12 22 H16 V16 H20" fill="none" stroke="#7f8fb0" stroke-width="1.4"/>
+      </svg>
+      <h1>Naqsha</h1><span class="ver" id="nq-ver"></span>
+    </div>
+    <a class="nq-btn" href="https://github.com/SiteQ8/Naqsha" style="text-decoration:none">GitHub</a>
+  </div>
+  <p class="tag">Diagrams as code. Describe a system as nodes, edges, and groups on the left, and get a polished interactive diagram on the right: pan and zoom, click a node to trace everything it reaches upstream and downstream, search, switch theme, and export a clean SVG or PNG. The command line turns the same source into one self contained HTML file you can open anywhere. Nothing you type here leaves your browser.</p>
+
+  <div class="cols">
+    <div class="editor">
+      <div class="lbl">Source. Edit and the diagram updates.</div>
+      <textarea id="nq-source" spellcheck="false"></textarea>
+      <div class="exs">
+        <button class="nq-btn" id="ex-payments">Payments platform</button>
+        <button class="nq-btn" id="ex-cicd">CI and CD</button>
+        <button class="nq-btn" id="ex-rag">Retrieval pipeline</button>
+      </div>
+      <div class="err" id="nq-error"></div>
+    </div>
+
+    <div id="nq-root" class="nq-app">
+      <div class="nq-toolbar">
+        <input id="nq-search" class="nq-search" type="text" placeholder="Search nodes" spellcheck="false">
+        <button class="nq-btn" id="nq-theme" title="Toggle theme">Theme</button>
+        <button class="nq-btn" id="nq-zout" title="Zoom out">&#8722;</button>
+        <button class="nq-btn" id="nq-zin" title="Zoom in">&#43;</button>
+        <button class="nq-btn" id="nq-zreset" title="Reset view">Reset</button>
+        <button class="nq-btn" id="nq-svg" title="Export SVG">SVG</button>
+        <button class="nq-btn" id="nq-png" title="Export PNG">PNG</button>
+        <span class="nq-spacer"></span>
+        <span class="nq-hint">click a node to trace its reach</span>
+      </div>
+      <div class="nq-stage" id="nq-stage"></div>
+    </div>
+  </div>
+
+  <p class="foot">Naqsha means map or blueprint. Diagrams as code with zero dependencies, in the browser and as a command line tool. <a href="https://github.com/SiteQ8/Naqsha">Source on GitHub</a>.</p>
+</div>
+<script src="app/viewer.js"></script>
+<script type="module" src="app/playground.js"></script>
+</body>
+</html>

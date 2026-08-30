@@ -1,0 +1,90 @@
+/* Naqsha styles. One stylesheet themes the diagram and the surrounding page, in
+   dark (default) and light. The diagram rules are scoped to .nq-svg so the same
+   look appears in a generated standalone file and in the playground. */
+
+:root {
+  --nq-bg: #0f1420;
+  --nq-panel: #151d2e;
+  --nq-line: #26314a;
+  --nq-text: #e8edf6;
+  --nq-dim: #93a1ba;
+  --nq-node-fill: #182234;
+  --nq-node-stroke: #3a5580;
+  --nq-node-text: #eaf0f9;
+  --nq-edge: #5c6f95;
+  --nq-edge-text: #9aa8c4;
+  --nq-edge-bg: #131b2b;
+  --nq-group-fill: rgba(96,132,220,0.06);
+  --nq-group-stroke: rgba(120,150,220,0.28);
+  --nq-group-text: #8ea0c4;
+  --nq-hot: #5a86ff;
+  --nq-hot-2: #3fd6c8;
+  --nq-accent: #3fd6c8;
+  --nq-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.nq-light {
+  --nq-bg: #f6f8fc;
+  --nq-panel: #ffffff;
+  --nq-line: #dbe3ef;
+  --nq-text: #1a2333;
+  --nq-dim: #5a6b86;
+  --nq-node-fill: #ffffff;
+  --nq-node-stroke: #b7c4dc;
+  --nq-node-text: #1a2333;
+  --nq-edge: #9fb0cc;
+  --nq-edge-text: #5a6b86;
+  --nq-edge-bg: #ffffff;
+  --nq-group-fill: rgba(90,134,255,0.05);
+  --nq-group-stroke: rgba(90,134,255,0.26);
+  --nq-group-text: #566a8e;
+  --nq-hot: #2f6bff;
+  --nq-hot-2: #12a594;
+  --nq-accent: #12a594;
+  --nq-shadow: 0 1px 2px rgba(20,40,80,0.10);
+}
+
+/* ---- the diagram ---- */
+.nq-svg { display: block; width: 100%; height: 100%; background: var(--nq-bg); }
+.nq-group-box { fill: var(--nq-group-fill); stroke: var(--nq-group-stroke); stroke-dasharray: 5 4; }
+.nq-group-label { fill: var(--nq-group-text); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+
+.nq-edge-path { stroke: var(--nq-edge); stroke-width: 1.6; }
+.nq-arrowhead { fill: var(--nq-edge); }
+.nq-arrowhead-hot { fill: var(--nq-hot); }
+.nq-edge-label text { fill: var(--nq-edge-text); font-size: 11px; }
+.nq-edge-label-bg { fill: var(--nq-edge-bg); opacity: .82; }
+
+.nq-shape { fill: var(--nq-node-fill); stroke: var(--nq-node-stroke); stroke-width: 1.5; filter: drop-shadow(var(--nq-shadow)); }
+.nq-shape-line { stroke: var(--nq-node-stroke); stroke-width: 1.3; }
+.nq-node-label { fill: var(--nq-node-text); font-size: 13px; font-weight: 500; }
+.nq-node[data-shape="store"] .nq-shape { stroke: #a78bff; }
+.nq-node[data-shape="queue"] .nq-shape { stroke: #3fd6c8; }
+.nq-node[data-shape="actor"] .nq-shape { stroke: #5a86ff; }
+.nq-node[data-shape="diamond"] .nq-shape { stroke: #ffcb61; }
+.nq-node { cursor: pointer; }
+
+/* focus and search states, toggled by the viewer on the svg root */
+.nq-svg.nq-focusing .nq-node:not(.nq-hot) { opacity: .22; }
+.nq-svg.nq-focusing .nq-edge:not(.nq-hot) { opacity: .12; }
+.nq-svg.nq-focusing .nq-group { opacity: .5; }
+.nq-node.nq-hot .nq-shape { stroke: var(--nq-hot); stroke-width: 2.2; }
+.nq-node.nq-seed .nq-shape { stroke: var(--nq-hot); stroke-width: 2.6; fill: color-mix(in srgb, var(--nq-hot) 14%, var(--nq-node-fill)); }
+.nq-edge.nq-hot .nq-edge-path { stroke: var(--nq-hot); stroke-width: 2.4; }
+
+.nq-svg.nq-searching .nq-node:not(.nq-match) { opacity: .18; }
+.nq-svg.nq-searching .nq-edge { opacity: .12; }
+.nq-node.nq-match .nq-shape { stroke: var(--nq-hot-2); stroke-width: 2.2; }
+
+/* ---- toolbar shared by the standalone file and the playground ---- */
+.nq-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; background: var(--nq-panel); border: 1px solid var(--nq-line); border-radius: 10px; }
+.nq-toolbar .nq-title { font-weight: 650; color: var(--nq-text); margin-right: 6px; }
+.nq-btn { background: transparent; color: var(--nq-text); border: 1px solid var(--nq-line); border-radius: 7px; padding: 5px 10px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.nq-btn:hover { border-color: var(--nq-accent); }
+.nq-search { background: var(--nq-bg); color: var(--nq-text); border: 1px solid var(--nq-line); border-radius: 7px; padding: 5px 10px; font-size: 12.5px; min-width: 150px; font-family: inherit; }
+.nq-spacer { flex: 1; }
+.nq-hint { color: var(--nq-dim); font-size: 11.5px; }
+
+/* ---- app shell shared by the standalone file and the playground stage ---- */
+.nq-app { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.nq-stage { flex: 1; min-height: 0; border: 1px solid var(--nq-line); border-radius: 12px; overflow: hidden; background: var(--nq-bg); }
+.nq-stage .nq-svg { height: 100%; }

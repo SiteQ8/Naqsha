@@ -1,0 +1,22 @@
+title CI and CD pipeline
+direction LR
+
+node dev "Developer" shape=actor
+node pr "Pull request"
+node build "Build"
+node test "Test suite"
+node scan "Security scan"
+node stage "Staging"
+node approve "Manual approval" shape=diamond
+node prod "Production"
+node rollback "Rollback" shape=diamond
+
+edge dev -> pr "push"
+edge pr -> build
+edge build -> test
+edge test -> scan
+edge scan -> stage "deploy"
+edge stage -> approve
+edge approve -> prod "release"
+edge prod -> rollback "on failure"
+edge rollback -> stage "redeploy"
