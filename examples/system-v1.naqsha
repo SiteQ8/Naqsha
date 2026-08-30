@@ -1,0 +1,14 @@
+title Platform
+direction LR
+group edge "Edge"
+group core "Core"
+node users "Users" shape=actor
+node lb "Load balancer" group=edge
+node api "API" group=core
+node db "PostgreSQL" shape=store group=core
+node worker "Worker" group=core
+edge users -> lb
+edge lb -> api
+edge api -> db "queries"
+edge api -> worker "enqueue"
+edge worker -> db "writes"

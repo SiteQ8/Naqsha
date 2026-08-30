@@ -46,11 +46,19 @@ export function toHTML(model, svg, options) {
   const name = slug(title);
   const light = options.theme === "light";
   const adj = JSON.stringify(model.adj || { out: {}, in: {} });
+  const isDiff = model.kind === "diff";
   const hint = model.kind === "sequence" ? "click a participant to trace its messages" : model.kind === "state" ? "click a state to trace where it leads" : "click a node to trace its reach";
+  const diffControls = isDiff ? `
+      <span class="nq-mode-group">
+        <button class="nq-btn nq-mode-btn" id="nq-m-before" title="Before this change">Before</button>
+        <button class="nq-btn nq-mode-btn" id="nq-m-after" title="After this change">After</button>
+        <button class="nq-btn nq-mode-btn nq-on" id="nq-m-delta" title="Everything, colored">Delta</button>
+      </span>
+      <span class="nq-legend"><span><i class="nq-lg-add"></i>added</span><span><i class="nq-lg-rem"></i>removed</span><span><i class="nq-lg-chg"></i>changed</span></span>` : "";
 
   const toolbar = `
     <div class="nq-toolbar">
-      <span class="nq-title">${esc(title)}</span>
+      <span class="nq-title">${esc(title)}</span>${diffControls}
       <input id="nq-search" class="nq-search" type="text" placeholder="Search nodes  /" spellcheck="false">
       <button class="nq-btn" id="nq-theme" title="Toggle theme (T)">Theme</button>
       <button class="nq-btn" id="nq-zout" title="Zoom out (-)">&#8722;</button>
@@ -97,6 +105,12 @@ ${toolbar}
   document.getElementById("nq-svg").onclick = function(){ api.exportSVG(); };
   document.getElementById("nq-png").onclick = function(){ api.exportPNG(); };
   document.getElementById("nq-card").onclick = function(){ api.exportCard(); };
+  ${isDiff ? `
+  function nqMode(m){ api.setMode(m); ["before","after","delta"].forEach(function(x){ var b=document.getElementById("nq-m-"+x); if(b) b.classList.toggle("nq-on", x===m); }); }
+  document.getElementById("nq-m-before").onclick = function(){ nqMode("before"); };
+  document.getElementById("nq-m-after").onclick = function(){ nqMode("after"); };
+  document.getElementById("nq-m-delta").onclick = function(){ nqMode("delta"); };
+  ` : ""}
 })();
 </script>
 </body>

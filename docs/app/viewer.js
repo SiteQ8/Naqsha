@@ -164,6 +164,10 @@
       if (t === "light") root.classList.add("nq-light");
       else root.classList.remove("nq-light");
     }
+    function setMode(mode) {
+      svg.classList.remove("nq-mode-before", "nq-mode-after", "nq-mode-delta");
+      svg.classList.add("nq-mode-" + (mode || "delta"));
+    }
 
     // export: inline computed styles onto a clone so the SVG stands alone
     function standaloneSVG() {
@@ -262,7 +266,7 @@
       img.src = blobUrl;
     }
 
-    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, exportSVG, exportPNG, exportCard, state };
+    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, setMode, exportSVG, exportPNG, exportCard, state };
 
     // keyboard shortcuts when this viewer owns the page (standalone file)
     let onKey = null;

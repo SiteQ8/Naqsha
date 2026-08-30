@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0
+
+- Before and after diff. `naqsha diff before.naqsha after.naqsha` compares two
+  snapshots of the same graph and shows what changed: added nodes and edges in
+  green, removed ones in red and dashed, ones whose label changed in amber, and
+  the rest unchanged. The union of both snapshots is laid out once so the picture
+  holds still, and the generated file has three view modes, Before, After, and
+  Delta. Meant for reviewing how an architecture changed in a pull request.
+- The palette gained added, removed, and changed colors, and the viewer gained a
+  view mode switch, both used by the diff.
+- 48 tests.
+
 ## 0.3.0
 
 - A third diagram type: the state machine, written as `type state` or

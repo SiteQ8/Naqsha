@@ -6,12 +6,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, basename } from "node:path";
 import { createServer } from "node:http";
 
-import { build, validate, parse, layout, renderSVG, layoutSequence, renderSequence, renderState, stateToGraph, palette } from "../docs/app/engine.mjs";
+import { build, buildDiff, validate, parse, layout, renderSVG, layoutSequence, renderSequence, renderState, stateToGraph, palette } from "../docs/app/engine.mjs";
 import { toHTML, toCard } from "./html.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 const EXAMPLE = `title Payments platform
 direction LR
@@ -47,6 +47,7 @@ Usage:
   naqsha render <source> [-o out.html] [--theme dark|light]   build a diagram
   naqsha example [-o file.naqsha]                             print a starter source
   naqsha card <source> [-o card.svg] [--theme dark|light]     a 1200 by 630 share image
+  naqsha diff <before> <after> [-o out.html] [--theme]        show what changed between two graphs
   naqsha serve [--port 8300] [--open]                         run the browser playground
   naqsha version
 
@@ -112,6 +113,26 @@ function cmdCard(args) {
   return 0;
 }
 
+function cmdDiff(args) {
+  const before = args[0], after = args[1];
+  if (!before || !after || before.startsWith("-") || after.startsWith("-")) {
+    console.error("naqsha: diff needs a before file and an after file");
+    return 2;
+  }
+  for (const f of [before, after]) if (!existsSync(f)) { console.error("naqsha: no such file: " + f); return 2; }
+  let built;
+  try { built = buildDiff(readFileSync(before, "utf8"), readFileSync(after, "utf8")); }
+  catch (e) { console.error("naqsha: " + e.message); return 2; }
+  const theme = argValue(args, "--theme") === "light" ? "light" : "dark";
+  const html = toHTML(built.model, built.svg, { theme });
+  const out = argValue(args, "-o") || argValue(args, "--output") || "diff.html";
+  writeFileSync(out, html);
+  const count = (st) => built.model.nodes.filter((n) => n.status === st).length;
+  const ecount = (st) => built.model.edges.filter((e) => e.status === st).length;
+  console.log("wrote " + out + "  (nodes: " + count("added") + " added, " + count("removed") + " removed, " + count("changed") + " changed; edges: " + ecount("added") + " added, " + ecount("removed") + " removed)");
+  return 0;
+}
+
 function cmdExample(args) {
   const out = argValue(args, "-o") || argValue(args, "--output");
   if (out) { writeFileSync(out, EXAMPLE); console.log("wrote " + out); }
@@ -160,6 +181,7 @@ function main() {
   if (cmd === "render") return cmdRender(args);
   if (cmd === "example") return cmdExample(args);
   if (cmd === "card") return cmdCard(args);
+  if (cmd === "diff") return cmdDiff(args);
   if (cmd === "serve") return cmdServe(args);
   if (cmd === "version" || cmd === "--version" || cmd === "-v") { console.log("naqsha " + VERSION); return 0; }
   if (cmd === "help" || cmd === "--help" || cmd === "-h" || !cmd) { usage(); return 0; }

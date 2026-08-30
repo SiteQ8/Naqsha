@@ -7,14 +7,16 @@ export { renderSVG } from "./render.mjs";
 export { layoutSequence, renderSequence } from "./sequence.mjs";
 export { palette } from "./theme.mjs";
 export { renderState, stateToGraph } from "./state.mjs";
+export { diffGraphs, renderDiff } from "./diff.mjs";
 
 import { parse } from "./parse.mjs";
 import { layout } from "./layout.mjs";
 import { renderSVG } from "./render.mjs";
 import { layoutSequence, renderSequence } from "./sequence.mjs";
 import { renderState, stateToGraph } from "./state.mjs";
+import { diffGraphs, renderDiff } from "./diff.mjs";
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 
 // source text -> { ir, model, svg }, dispatching on the diagram type
 export function build(source) {
@@ -31,4 +33,14 @@ export function build(source) {
   }
   const model = layout(ir);
   return { ir, model, svg: renderSVG(model) };
+}
+
+// two sources -> a laid out diff of the union, with each element tagged
+export function buildDiff(beforeSource, afterSource) {
+  const before = parse(beforeSource);
+  const after = parse(afterSource);
+  const ir = diffGraphs(before, after);
+  const model = layout(ir);
+  model.kind = "diff";
+  return { before, after, model, svg: renderDiff(model) };
 }
