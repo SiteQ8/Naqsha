@@ -55,7 +55,9 @@ export function parse(text) {
     const t = tokenize(line);
     if (t[0].v.toLowerCase() === "type") type = (t[1] ? t[1].v : "graph").toLowerCase();
   }
-  return type === "sequence" || type === "seq" ? parseSequence(lines) : parseGraph(lines);
+  if (type === "sequence" || type === "seq") return parseSequence(lines);
+  if (type === "state" || type === "lifecycle" || type === "statechart") return parseState(lines);
+  return parseGraph(lines);
 }
 
 function parseGraph(lines) {
@@ -168,6 +170,66 @@ function parseSequence(lines) {
   return ir;
 }
 
+function parseState(lines) {
+  const ir = { title: "", type: "state", direction: "LR", states: [], transitions: [], initial: "" };
+  const ids = new Set();
+  const declare = (id, label, final) => {
+    if (!ids.has(id)) { ids.add(id); ir.states.push({ id, label: label || id, final: !!final }); }
+    else {
+      const st = ir.states.find((x) => x.id === id);
+      if (label) st.label = label;
+      if (final) st.final = true;
+    }
+  };
+
+  for (let ln = 0; ln < lines.length; ln++) {
+    const line = lines[ln].split("#")[0].trim();
+    if (!line) continue;
+    const tokens = tokenize(line);
+    const head = tokens[0].v.toLowerCase();
+
+    if (head === "title") { ir.title = directiveTitle(line); continue; }
+    if (head === "type") continue;
+    if (head === "direction" || head === "dir") {
+      const d = (tokens[1] ? tokens[1].v : "LR").toUpperCase();
+      ir.direction = d === "TB" || d === "TD" ? "TB" : "LR";
+      continue;
+    }
+    if (head === "initial" || head === "start") {
+      if (tokens.length < 2) throw new Error(`line ${ln + 1}: initial needs a state id`);
+      ir.initial = tokens[1].v;
+      declare(tokens[1].v);
+      continue;
+    }
+    if (head === "final" || head === "end") {
+      if (tokens.length < 2) throw new Error(`line ${ln + 1}: final needs a state id`);
+      declare(tokens[1].v, tokens[2] && tokens[2].quoted ? tokens[2].v : "", true);
+      continue;
+    }
+    if (head === "state") {
+      if (tokens.length < 2) throw new Error(`line ${ln + 1}: state needs an id`);
+      const id = tokens[1].v;
+      const label = tokens[2] && tokens[2].quoted ? tokens[2].v : id;
+      const isFinal = tokens.slice(2).some((t) => !t.quoted && t.v.toLowerCase() === "final");
+      declare(id, label, isFinal);
+      continue;
+    }
+    const arrowPos = tokens.findIndex((t) => isArrow(t.v));
+    if (arrowPos >= 1) {
+      const from = tokens[arrowPos - 1].v;
+      const to = tokens[arrowPos + 1] ? tokens[arrowPos + 1].v : "";
+      if (!to) throw new Error(`line ${ln + 1}: a transition needs a target after the arrow`);
+      const dashed = tokens[arrowPos].v === "-->";
+      const label = tokens[arrowPos + 2] && tokens[arrowPos + 2].quoted ? tokens[arrowPos + 2].v : "";
+      declare(from); declare(to);
+      ir.transitions.push({ from, to, label, dashed });
+      continue;
+    }
+    throw new Error(`line ${ln + 1}: unknown statement '${tokens[0].v}'`);
+  }
+  return ir;
+}
+
 export function validate(ir) {
   const problems = [];
   if (ir.type === "sequence") {
@@ -178,6 +240,15 @@ export function validate(ir) {
         if (!ids.has(s.to)) problems.push(`message references unknown participant '${s.to}'`);
       }
     }
+    return problems;
+  }
+  if (ir.type === "state") {
+    const sids = new Set(ir.states.map((s) => s.id));
+    for (const t of ir.transitions) {
+      if (!sids.has(t.from)) problems.push(`transition references unknown state '${t.from}'`);
+      if (!sids.has(t.to)) problems.push(`transition references unknown state '${t.to}'`);
+    }
+    if (ir.initial && !sids.has(ir.initial)) problems.push(`initial references unknown state '${ir.initial}'`);
     return problems;
   }
   const ids = new Set(ir.nodes.map((n) => n.id));

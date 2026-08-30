@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0
+
+- A third diagram type: the state machine, written as `type state` or
+  `type lifecycle`. States are boxes, transitions are labelled arrows, a filled
+  dot marks the initial state, and a final state gets a second inner outline.
+  It reuses the layered layout, and because a state machine is a directed graph
+  the viewer traces it like one: click a state to see every state reachable from
+  it and every state that leads to it. Share cards and export work here too.
+- Back edge labels now sit on the curve that bows away from the nodes rather than
+  on the straight centre line, so a pair of states with a transition each way no
+  longer overlaps its two labels.
+- 42 tests.
+
 ## 0.2.0
 
 - A second diagram type: sequence. Set `type sequence` and describe participants

@@ -200,7 +200,8 @@ export function layout(ir) {
           const bowY = Math.min(H - 14, Math.max(a.cy, b.cy) + 46);
           d = `M ${a.x + a.w} ${a.cy} C ${a.x + a.w + off} ${bowY}, ${b.x + b.w + off} ${bowY}, ${b.x + b.w} ${b.cy}`;
         }
-        mx = (sx + tx) / 2; my = (sy + ty) / 2;
+        mx = (sx + tx) / 2;
+        my = forward ? (sy + ty) / 2 : Math.min(H - 10, Math.max(a.cy, b.cy) + 34);
       } else {
         const forward = b.y >= a.y + a.h;
         const sx = a.cx, sy = forward ? a.y + a.h : a.y + a.h;
@@ -213,7 +214,8 @@ export function layout(ir) {
           const bowX = Math.min(Wd - 14, Math.max(a.cx, b.cx) + 46);
           d = `M ${a.cx} ${a.y + a.h} C ${bowX} ${a.y + a.h + off}, ${bowX} ${b.y + b.h + off}, ${b.cx} ${b.y + b.h}`;
         }
-        mx = (sx + tx) / 2; my = (sy + ty) / 2;
+        my = (sy + ty) / 2;
+        mx = forward ? (sx + tx) / 2 : Math.min(Wd - 10, Math.max(a.cx, b.cx) + 34);
       }
       return { ...e, d, mx, my, id: "e" + i };
     });
