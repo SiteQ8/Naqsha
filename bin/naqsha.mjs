@@ -11,7 +11,7 @@ import { toHTML, toCard } from "./html.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 
 const EXAMPLE = `title Payments platform
 direction LR

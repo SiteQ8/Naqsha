@@ -146,3 +146,15 @@
 .nq-legend .nq-lg-rem { border-color: var(--nq-removed); border-style: dashed; }
 .nq-legend .nq-lg-chg { border-color: var(--nq-changed); }
 .nq-mode-btn.nq-on { border-color: var(--nq-accent); color: var(--nq-text); }
+
+/* ---- finite motion: a flow toggle animates connections toward their arrowhead ---- */
+@keyframes nq-flow-dash { to { stroke-dashoffset: -12; } }
+.nq-svg.nq-flow .nq-edge-path,
+.nq-svg.nq-flow .nq-msg-path {
+  stroke-dasharray: 7 5;
+  animation: nq-flow-dash 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nq-svg.nq-flow .nq-edge-path,
+  .nq-svg.nq-flow .nq-msg-path { animation: none; }
+}
