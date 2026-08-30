@@ -1,0 +1,18 @@
+title Platform
+direction LR
+group edge "Edge"
+group core "Core"
+node users "Users" shape=actor
+node lb "Load balancer" group=edge
+node api "API" group=core
+node db "PostgreSQL" shape=store group=core
+node worker "Worker" group=core
+node cache "Redis" shape=store group=core
+node bus "Event bus" shape=queue group=core
+edge users -> lb
+edge lb -> api
+edge api -> db "reads"
+edge api -> cache "cache"
+edge api -> bus "publish"
+edge bus -> worker "consume"
+edge worker -> db "writes"

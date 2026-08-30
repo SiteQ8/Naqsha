@@ -128,6 +128,18 @@ naqsha card system.naqsha -o card.svg
 
 ![A share card](docs/card.png)
 
+## Before and after
+
+Point Naqsha at two snapshots of the same graph and it shows what changed. Nodes and edges that were added are green, ones that were removed are red and dashed, ones whose label changed are amber, and the rest stay as they were. The union of both snapshots is laid out once so the picture holds still, and the generated file has three view modes, Before, After, and Delta, so you can look at either version alone or at the change itself. This is meant for a pull request: keep the diagram as a source file and compare two revisions of it.
+
+```
+naqsha diff before.naqsha after.naqsha -o change.html
+```
+
+![A before and after diff](docs/diff.png)
+
+Diffing is for the graph type.
+
 ## Install and use
 
 Naqsha needs Node 18 or newer and nothing else.
@@ -152,6 +164,7 @@ Commands:
 naqsha render <source> [-o out.html] [--theme dark|light]   build a self contained diagram
 naqsha example [-o file.naqsha]                             print a source to start from
 naqsha card <source> [-o card.svg] [--theme dark|light]     a 1200 by 630 share image
+naqsha diff <before> <after> [-o out.html]                  show what changed between two graphs
 naqsha serve [--port 8300] [--open]                         run the browser playground locally
 naqsha version
 ```
@@ -162,7 +175,7 @@ naqsha version
 
 Naqsha draws three diagram types today. The graph type covers architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges; its layout is a compact layered algorithm in the spirit of the Sugiyama method, a good automatic starting point rather than a hand tuned drawing, so a large or unusual graph may want splitting or a nudge in the source. The sequence type covers calls between participants over time. The state type covers a lifecycle or state machine: states, labelled transitions, an initial state, and final states. The viewer reflects the diagram you wrote, not a running system.
 
-A data flow type, finite motion along edges, and a before and after comparison of two snapshots are the natural next steps, and the engine is built around a diagram type so they slot in cleanly. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
+A data flow type and finite motion along edges are the natural next steps, and the engine is built around a diagram type so they slot in cleanly. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
 
 ## License
 

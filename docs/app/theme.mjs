@@ -12,6 +12,7 @@ const DARK = {
   groupFill: "rgba(96,132,220,0.06)", groupStroke: "rgba(120,150,220,0.28)", groupText: "#8ea0c4",
   shape: { store: "#a78bff", queue: "#3fd6c8", actor: "#5a86ff", diamond: "#ffcb61" },
   lifeline: "#2c3854", msg: "#6b7ea6", noteFill: "#1a2540", noteText: "#c7d2e6",
+  added: "#46c07a", removed: "#e5647d", changed: "#e0b13a",
 };
 
 const LIGHT = {
@@ -21,6 +22,7 @@ const LIGHT = {
   groupFill: "rgba(90,134,255,0.05)", groupStroke: "rgba(90,134,255,0.26)", groupText: "#566a8e",
   shape: { store: "#7c5cff", queue: "#12a594", actor: "#2f6bff", diamond: "#c98a1a" },
   lifeline: "#c2cfe0", msg: "#7f90ad", noteFill: "#eef2fb", noteText: "#33415e",
+  added: "#1a9e5f", removed: "#d6455f", changed: "#b1841a",
 };
 
 export function palette(theme) {

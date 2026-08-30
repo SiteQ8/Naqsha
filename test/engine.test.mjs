@@ -145,5 +145,5 @@ test("build returns ir, model, and svg together", () => {
 });
 
 test("version is exported", () => {
-  assert.equal(VERSION, "0.3.0");
+  assert.equal(VERSION, "0.4.0");
 });
