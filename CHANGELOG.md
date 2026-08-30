@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- An agent skill at skill/SKILL.md. It teaches an assistant the source language
+  for all three diagram types and the render, card, and diff commands, so an
+  assistant can turn a plain request into a Naqsha source and a self contained
+  diagram. Every diagram source in the skill is checked against the real engine.
+
 ## 0.5.0
 
 - Finite motion. A Flow button, or the F key in a generated file, animates every
