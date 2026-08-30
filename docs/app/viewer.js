@@ -22,9 +22,11 @@
 
   function init(root, adj, opts) {
     opts = opts || {};
+    adj = adj || { out: {}, in: {} };
     const svg = root.querySelector(".nq-svg");
     const vp = root.querySelector(".nq-viewport");
     if (!svg || !vp) return null;
+    const kind = svg.getAttribute("data-kind") || "graph";
 
     const state = { x: 0, y: 0, k: 1 };
     function apply() {
@@ -75,18 +77,33 @@
       focused = null;
       svg.classList.remove("nq-focusing");
       svg.querySelectorAll(".nq-hot, .nq-seed").forEach(function (el) { el.classList.remove("nq-hot", "nq-seed"); });
+      svg.querySelectorAll(".nq-edge-path, .nq-msg-path").forEach(function (p) { p.setAttribute("marker-end", "url(#nq-arrow)"); });
     }
-    function focus(id) {
-      clearSearch();
-      if (focused === id) { clearFocus(); return; }
-      clearFocus();
-      focused = id;
+    function focusSequence(id) {
+      const hot = new Set([id]);
+      svg.querySelectorAll(".nq-msg").forEach(function (el) {
+        const f = el.getAttribute("data-from"), t = el.getAttribute("data-to");
+        if (f === id || t === id) { hot.add(f); hot.add(t); }
+      });
+      svg.querySelectorAll(".nq-msg").forEach(function (el) {
+        const f = el.getAttribute("data-from"), t = el.getAttribute("data-to");
+        if (f === id || t === id) el.classList.add("nq-hot");
+      });
+      svg.querySelectorAll(".nq-participant").forEach(function (el) {
+        const pid = el.getAttribute("data-participant");
+        if (pid === id) el.classList.add("nq-hot", "nq-seed");
+        else if (hot.has(pid)) el.classList.add("nq-hot");
+      });
+      svg.querySelectorAll(".nq-lifeline").forEach(function (el) {
+        if (hot.has(el.getAttribute("data-participant"))) el.classList.add("nq-hot");
+      });
+    }
+    function focusGraph(id) {
       const up = reach(adj, id, "in");
       const down = reach(adj, id, "out");
       const hot = new Set([id]);
       up.forEach((n) => hot.add(n));
       down.forEach((n) => hot.add(n));
-      svg.classList.add("nq-focusing");
       svg.querySelectorAll(".nq-node").forEach(function (el) {
         const nid = el.getAttribute("data-node");
         if (nid === id) el.classList.add("nq-hot", "nq-seed");
@@ -94,20 +111,29 @@
       });
       svg.querySelectorAll(".nq-edge").forEach(function (el) {
         const f = el.getAttribute("data-from"), t = el.getAttribute("data-to");
+        const p = el.querySelector(".nq-edge-path");
         if (hot.has(f) && hot.has(t)) {
           el.classList.add("nq-hot");
-          const p = el.querySelector(".nq-edge-path");
           if (p) p.setAttribute("marker-end", "url(#nq-arrow-hot)");
-        } else {
-          const p = el.querySelector(".nq-edge-path");
-          if (p) p.setAttribute("marker-end", "url(#nq-arrow)");
-        }
+        } else if (p) p.setAttribute("marker-end", "url(#nq-arrow)");
       });
     }
-    svg.querySelectorAll(".nq-node").forEach(function (el) {
-      el.addEventListener("click", function (e) { e.stopPropagation(); focus(el.getAttribute("data-node")); });
+    function focus(id) {
+      clearSearch();
+      if (focused === id) { clearFocus(); return; }
+      clearFocus();
+      focused = id;
+      svg.classList.add("nq-focusing");
+      if (kind === "sequence") focusSequence(id);
+      else focusGraph(id);
+    }
+    svg.querySelectorAll("[data-node],[data-participant]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.stopPropagation();
+        focus(el.getAttribute("data-node") || el.getAttribute("data-participant"));
+      });
     });
-    svg.addEventListener("click", function (e) { if (!e.target.closest(".nq-node")) clearFocus(); });
+    svg.addEventListener("click", function (e) { if (!e.target.closest("[data-node],[data-participant]")) clearFocus(); });
 
     // search by label
     function clearSearch() {
@@ -119,9 +145,10 @@
       term = (term || "").trim().toLowerCase();
       if (!term) { clearSearch(); return 0; }
       let count = 0;
-      svg.querySelectorAll(".nq-node").forEach(function (el) {
-        const label = (el.querySelector(".nq-node-label") || {}).textContent || "";
-        const id = el.getAttribute("data-node") || "";
+      svg.querySelectorAll(".nq-node, .nq-participant").forEach(function (el) {
+        const labelEl = el.querySelector(".nq-node-label, .nq-plabel");
+        const label = (labelEl && labelEl.textContent) || "";
+        const id = el.getAttribute("data-node") || el.getAttribute("data-participant") || "";
         const hit = label.toLowerCase().indexOf(term) >= 0 || id.toLowerCase().indexOf(term) >= 0;
         if (hit) { el.classList.add("nq-match"); count++; } else el.classList.remove("nq-match");
       });
@@ -199,8 +226,43 @@
       };
       img.src = blobUrl;
     }
+    function exportCard() {
+      // compose the diagram onto a 1200 by 630 card, the size link previews expect
+      const { svg: s, w, h } = standaloneSVG();
+      const light = root.classList.contains("nq-light");
+      const c = light
+        ? { bg: "#f6f8fc", text: "#1a2333", dim: "#5a6b86", accent: "#12a594", line: "#dbe3ef" }
+        : { bg: "#0f1420", text: "#e8edf6", dim: "#93a1ba", accent: "#3fd6c8", line: "#26314a" };
+      const W = 1200, H = 630, PAD = 56;
+      const FONT = "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
+      const title = opts.title || "Diagram";
+      const kind = (svg.getAttribute("data-kind") === "sequence" ? "sequence diagram" : "architecture diagram").toUpperCase();
+      const areaX = PAD, areaY = 120, areaW = W - 2 * PAD, areaH = H - areaY - 64;
+      const img = new Image();
+      const blobUrl = URL.createObjectURL(new Blob([s], { type: "image/svg+xml" }));
+      img.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = W * 2; canvas.height = H * 2;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(2, 2);
+        ctx.fillStyle = c.bg; ctx.fillRect(0, 0, W, H);
+        ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+        ctx.fillStyle = c.dim; ctx.font = "600 15px " + FONT; ctx.fillText(kind, PAD, 56);
+        ctx.fillStyle = c.text; ctx.font = "700 34px " + FONT; ctx.fillText(title, PAD, 96);
+        ctx.strokeStyle = c.line; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(PAD, 112); ctx.lineTo(W - PAD, 112); ctx.stroke();
+        const scale = Math.min(areaW / w, areaH / h);
+        const dw = w * scale, dh = h * scale;
+        ctx.drawImage(img, areaX + (areaW - dw) / 2, areaY + (areaH - dh) / 2, dw, dh);
+        ctx.fillStyle = c.accent; ctx.font = "600 19px " + FONT; ctx.textAlign = "right";
+        ctx.fillText("Naqsha", W - PAD, H - 32);
+        canvas.toBlob(function (blob) { download((opts.name || "naqsha") + "-card.png", blob); });
+        URL.revokeObjectURL(blobUrl);
+      };
+      img.src = blobUrl;
+    }
 
-    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, exportSVG, exportPNG, state };
+    const api = { zoomBy, resetView, focus, clearFocus, search, clearSearch, toggleTheme, setTheme, exportSVG, exportPNG, exportCard, state };
 
     // keyboard shortcuts when this viewer owns the page (standalone file)
     let onKey = null;

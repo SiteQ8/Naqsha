@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0
+
+- A second diagram type: sequence. Set `type sequence` and describe participants
+  and the messages between them, with calls, dashed returns and asynchronous
+  messages, self messages, and notes over a lifeline. Time flows down the page.
+  The viewer works here too: click a participant to light every message it takes
+  part in and the participants at the other end.
+- Share cards. Any diagram can be exported as a 1200 by 630 image sized for a
+  README banner or a link preview. The Card button in the browser writes a PNG,
+  and `naqsha card` on the command line writes a self contained SVG whose colors
+  are baked in, so it renders in any tool.
+- The renderers now write literal colors as presentation attributes alongside the
+  CSS classes, so a stylesheet free copy such as a card still renders correctly
+  anywhere, while the interactive diagram continues to theme itself with CSS.
+- 31 tests.
+
 ## 0.1.0
 
 First release.

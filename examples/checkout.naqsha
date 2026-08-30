@@ -1,0 +1,14 @@
+type sequence
+title Checkout
+participant user "User"
+participant web "Web app"
+participant pay "Payments"
+participant bank "Bank"
+user -> web "click pay"
+web -> pay "create charge"
+pay -> bank "authorize"
+bank --> pay "approved"
+pay --> web "charge ok"
+web -> web "write order"
+note over web "idempotent"
+web --> user "receipt"
