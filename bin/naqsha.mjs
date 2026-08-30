@@ -6,14 +6,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, extname, resolve, basename } from "node:path";
 import { createServer } from "node:http";
 
-import { parse, validate } from "../docs/app/parse.mjs";
-import { layout } from "../docs/app/layout.mjs";
-import { renderSVG } from "../docs/app/render.mjs";
-import { toHTML } from "./html.mjs";
+import { build, validate, parse, layout, renderSVG, layoutSequence, renderSequence, palette } from "../docs/app/engine.mjs";
+import { toHTML, toCard } from "./html.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const EXAMPLE = `title Payments platform
 direction LR
@@ -48,6 +46,7 @@ Turn a text description of a system into a self contained interactive diagram.
 Usage:
   naqsha render <source> [-o out.html] [--theme dark|light]   build a diagram
   naqsha example [-o file.naqsha]                             print a starter source
+  naqsha card <source> [-o card.svg] [--theme dark|light]     a 1200 by 630 share image
   naqsha serve [--port 8300] [--open]                         run the browser playground
   naqsha version
 
@@ -69,23 +68,44 @@ function cmdRender(args) {
   const src = args[0];
   if (!src || src.startsWith("-")) { console.error("naqsha: render needs a source file"); return 2; }
   if (!existsSync(src)) { console.error("naqsha: no such file: " + src); return 2; }
-  let ir;
+  let built;
   try {
-    ir = parse(readFileSync(src, "utf8"));
+    built = build(readFileSync(src, "utf8"));
   } catch (e) {
     console.error("naqsha: could not read the source: " + e.message);
     return 2;
   }
-  const problems = validate(ir);
-  for (const p of problems) console.error("warning: " + p);
-  const model = layout(ir);
-  const svg = renderSVG(model);
+  const { ir, model, svg } = built;
+  for (const p of validate(ir)) console.error("warning: " + p);
   const theme = argValue(args, "--theme") === "light" ? "light" : "dark";
   const html = toHTML(model, svg, { theme });
   const out = argValue(args, "-o") || argValue(args, "--output") ||
     join(dirname(resolve(src)), basename(src).replace(/\.[^.]+$/, "") + ".html");
   writeFileSync(out, html);
-  console.log("wrote " + out + "  (" + model.nodes.length + " nodes, " + model.edges.length + " edges)");
+  const count = ir.type === "sequence"
+    ? model.participants.length + " participants, " + model.steps.length + " steps"
+    : model.nodes.length + " nodes, " + model.edges.length + " edges";
+  console.log("wrote " + out + "  (" + count + ")");
+  return 0;
+}
+
+function cmdCard(args) {
+  const src = args[0];
+  if (!src || src.startsWith("-")) { console.error("naqsha: card needs a source file"); return 2; }
+  if (!existsSync(src)) { console.error("naqsha: no such file: " + src); return 2; }
+  let ir;
+  try { ir = parse(readFileSync(src, "utf8")); }
+  catch (e) { console.error("naqsha: could not read the source: " + e.message); return 2; }
+  const theme = argValue(args, "--theme") === "light" ? "light" : "dark";
+  const P = palette(theme);
+  let model, svg;
+  if (ir.type === "sequence") { model = layoutSequence(ir); svg = renderSequence(model, P); }
+  else { model = layout(ir); svg = renderSVG(model, P); }
+  const card = toCard(model, svg, { theme });
+  const out = argValue(args, "-o") || argValue(args, "--output") ||
+    join(dirname(resolve(src)), basename(src).replace(/\.[^.]+$/, "") + "-card.svg");
+  writeFileSync(out, card);
+  console.log("wrote " + out + "  (1200 by 630 share card)");
   return 0;
 }
 
@@ -136,6 +156,7 @@ function main() {
   const [cmd, ...args] = process.argv.slice(2);
   if (cmd === "render") return cmdRender(args);
   if (cmd === "example") return cmdExample(args);
+  if (cmd === "card") return cmdCard(args);
   if (cmd === "serve") return cmdServe(args);
   if (cmd === "version" || cmd === "--version" || cmd === "-v") { console.log("naqsha " + VERSION); return 0; }
   if (cmd === "help" || cmd === "--help" || cmd === "-h" || !cmd) { usage(); return 0; }

@@ -56,6 +56,31 @@ A **node** is a box in the diagram: `node <id> "Label"`, with an optional `group
 
 Any node you mention in an edge is created automatically, so a quick sketch is just a handful of arrows.
 
+## Sequence diagrams
+
+Set `type sequence` and Naqsha draws a sequence instead of a graph. Participants sit across the top, each with a lifeline running down the page, and messages are arrows between them, ordered top to bottom in the order you wrote them, so the vertical axis is time. A solid arrow is a call, a dashed arrow written with two dashes reads as a return or an asynchronous message, a message from a participant to itself draws as a small self loop, and a note over a participant places a labelled box on its lifeline.
+
+```
+type sequence
+title Checkout
+participant user "User"
+participant web "Web app"
+participant pay "Payments"
+participant bank "Bank"
+user -> web "click pay"
+web -> pay "create charge"
+pay -> bank "authorize"
+bank --> pay "approved"
+pay --> web "charge ok"
+web -> web "write order"
+note over web "idempotent"
+web --> user "receipt"
+```
+
+![A sequence diagram](docs/sequence.png)
+
+The viewer works here too. Click a participant to light every message it takes part in and the participants at the other end, and search, theme, and export behave the same as in a graph.
+
 ## The interactive viewer
 
 Every diagram, in the browser and in the exported file, comes with the same viewer.
@@ -65,6 +90,16 @@ Pan by dragging the background and zoom with the wheel or the plus, minus, and r
 ![Tracing what a node reaches](docs/trace.png)
 
 Above: focusing one service lights its upstream path and dims the rest, so you can read a dense diagram one question at a time.
+
+## Share cards
+
+Any diagram can be exported as a share card, a 1200 by 630 image sized for a README banner or a link preview. In the browser the Card button writes a PNG. On the command line, `naqsha card` writes a self contained SVG whose colors are baked in rather than left to a stylesheet, so it renders in any tool.
+
+```
+naqsha card system.naqsha -o card.svg
+```
+
+![A share card](docs/card.png)
 
 ## Install and use
 
@@ -89,6 +124,7 @@ Commands:
 ```
 naqsha render <source> [-o out.html] [--theme dark|light]   build a self contained diagram
 naqsha example [-o file.naqsha]                             print a source to start from
+naqsha card <source> [-o card.svg] [--theme dark|light]     a 1200 by 630 share image
 naqsha serve [--port 8300] [--open]                         run the browser playground locally
 naqsha version
 ```
@@ -97,9 +133,9 @@ naqsha version
 
 ## Honest scope
 
-This first release does one diagram type, the graph, and aims to do it well: architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges. The layout is a compact layered algorithm in the spirit of the Sugiyama method; it is a good automatic starting point, not a hand tuned drawing, and on a large or unusual graph you may want to split it or nudge the source. The viewer traces reach by following the edges you wrote; it reflects the diagram, and the diagram reflects what you told it, not a running system.
+Naqsha draws two diagram types today. The graph type covers architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges; its layout is a compact layered algorithm in the spirit of the Sugiyama method, a good automatic starting point rather than a hand tuned drawing, so a large or unusual graph may want splitting or a nudge in the source. The sequence type covers calls between participants over time. The viewer reflects the diagram you wrote, not a running system.
 
-Sequence and lifecycle diagram types, finite motion, and share card export are planned next, and the engine is built around a diagram type so they slot in without disturbing the graph type. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
+A lifecycle or state diagram type, a data flow type, finite motion along edges, and a before and after comparison of two snapshots are the natural next steps, and the engine is built around a diagram type so they slot in cleanly. The approach here, a typed source compiled deterministically into a self contained, explorable HTML diagram, was inspired by the excellent [Archify](https://github.com/tt-a1i/archify); Naqsha is a smaller, independent take on that idea, in a single shared engine with no dependencies.
 
 ## License
 

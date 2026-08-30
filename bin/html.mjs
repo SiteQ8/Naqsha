@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { palette } from "../docs/app/theme.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = join(HERE, "..", "docs", "app");
@@ -17,6 +18,26 @@ function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+export function toCard(model, svg, options) {
+  options = options || {};
+  const P = palette(options.theme === "light" ? "light" : "dark");
+  const W = 1200, H = 630, PAD = 56;
+  const FONT = "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
+  const title = model.title || options.title || "Diagram";
+  const kindLabel = (model.kind === "sequence" ? "sequence diagram" : "architecture diagram").toUpperCase();
+  const dw = model.width, dh = model.height;
+  const areaX = PAD, areaY = 120, areaW = W - 2 * PAD, areaH = H - areaY - 64;
+  const inner = svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">
+<rect width="${W}" height="${H}" fill="${P.bg}"/>
+<text x="${PAD}" y="56" fill="${P.dim}" font-size="15" letter-spacing="2">${esc(kindLabel)}</text>
+<text x="${PAD}" y="96" fill="${P.text}" font-size="34" font-weight="700">${esc(title)}</text>
+<line x1="${PAD}" y1="112" x2="${W - PAD}" y2="112" stroke="${P.line}" stroke-width="1"/>
+<svg x="${areaX}" y="${areaY}" width="${areaW}" height="${areaH}" viewBox="0 0 ${dw} ${dh}" preserveAspectRatio="xMidYMid meet">${inner}</svg>
+<text x="${W - PAD}" y="${H - 32}" fill="${P.accent}" font-size="19" font-weight="600" text-anchor="end">Naqsha</text>
+</svg>`;
+}
+
 export function toHTML(model, svg, options) {
   options = options || {};
   const css = readFileSync(join(APP, "styles.css"), "utf8");
@@ -24,7 +45,8 @@ export function toHTML(model, svg, options) {
   const title = model.title || options.title || "Naqsha diagram";
   const name = slug(title);
   const light = options.theme === "light";
-  const adj = JSON.stringify(model.adj);
+  const adj = JSON.stringify(model.adj || { out: {}, in: {} });
+  const hint = model.kind === "sequence" ? "click a participant to trace its messages" : "click a node to trace its reach";
 
   const toolbar = `
     <div class="nq-toolbar">
@@ -36,8 +58,9 @@ export function toHTML(model, svg, options) {
       <button class="nq-btn" id="nq-zreset" title="Reset view (0)">Reset</button>
       <button class="nq-btn" id="nq-svg" title="Export SVG">SVG</button>
       <button class="nq-btn" id="nq-png" title="Export PNG">PNG</button>
+      <button class="nq-btn" id="nq-card" title="Export a 1200 by 630 share image">Card</button>
       <span class="nq-spacer"></span>
-      <span class="nq-hint">click a node to trace its reach</span>
+      <span class="nq-hint">${esc(hint)}</span>
     </div>`;
 
   return `<!doctype html>
@@ -63,7 +86,7 @@ ${toolbar}
 (function(){
   var adj = ${adj};
   var root = document.getElementById("nq-root");
-  var api = window.NaqshaViewer.init(root, adj, { keys: true, name: ${JSON.stringify(name)} });
+  var api = window.NaqshaViewer.init(root, adj, { keys: true, name: ${JSON.stringify(name)}, title: ${JSON.stringify(title)} });
   if(!api) return;
   var s = document.getElementById("nq-search");
   s.addEventListener("input", function(e){ api.search(e.target.value); });
@@ -73,6 +96,7 @@ ${toolbar}
   document.getElementById("nq-zreset").onclick = function(){ api.resetView(); };
   document.getElementById("nq-svg").onclick = function(){ api.exportSVG(); };
   document.getElementById("nq-png").onclick = function(){ api.exportPNG(); };
+  document.getElementById("nq-card").onclick = function(){ api.exportCard(); };
 })();
 </script>
 </body>

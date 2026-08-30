@@ -5,6 +5,20 @@
 import { build } from "./engine.mjs";
 
 const EXAMPLES = {
+  sequence: `type sequence
+title Checkout
+participant user "User"
+participant web "Web app"
+participant pay "Payments"
+participant bank "Bank"
+user -> web "click pay"
+web -> pay "create charge"
+pay -> bank "authorize"
+bank --> pay "approved"
+pay --> web "charge ok"
+web -> web "write order"
+note over web "idempotent"
+web --> user "receipt"`,
   payments: `title Payments platform
 direction LR
 
@@ -89,7 +103,7 @@ function render() {
   err.style.display = "none";
   if (api) api.destroy();
   stage.innerHTML = result.svg;
-  api = window.NaqshaViewer.init(root, result.model.adj, { name: "naqsha", keys: false });
+  api = window.NaqshaViewer.init(root, result.model.adj, { name: "naqsha", keys: false, title: result.model.title || result.ir.title || "Diagram" });
 }
 
 let timer = null;
@@ -106,6 +120,7 @@ document.getElementById("nq-zout").onclick = function () { if (api) api.zoomBy(1
 document.getElementById("nq-zreset").onclick = function () { if (api) api.resetView(); };
 document.getElementById("nq-svg").onclick = function () { if (api) api.exportSVG(); };
 document.getElementById("nq-png").onclick = function () { if (api) api.exportPNG(); };
+document.getElementById("nq-card").onclick = function () { if (api) api.exportCard(); };
 
 // example switcher
 for (const key of Object.keys(EXAMPLES)) {

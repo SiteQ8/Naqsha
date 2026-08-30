@@ -1,22 +1,11 @@
 // Parse the Naqsha source language into a typed intermediate representation.
 //
-// The source is line based and reads close to plain notes. A diagram is a set
-// of nodes, directed edges between them, and optional groups that box related
-// nodes together. This module is pure: it uses no platform features, so the same
-// code runs in Node for the command line and in the browser for the playground.
-//
-//   title Payments platform
-//   direction LR
-//
-//   group edge "Edge"
-//   node users "Users" shape=actor
-//   node api "API gateway" group=edge
-//   node db "PostgreSQL" shape=store
-//
-//   edge users -> api "requests"
-//   edge api -> db "read and write"
-//
-// Anything after a hash is a comment. Labels are wrapped in double quotes.
+// A source is line based and reads close to plain notes. Two diagram types are
+// supported. A graph is nodes, directed edges, and optional groups. A sequence
+// is participants and an ordered list of messages between them, with time
+// flowing down the page. The type is set with a `type` line and defaults to
+// graph. This module is pure, so the same code runs in Node for the command
+// line and in the browser for the playground.
 
 export const SHAPES = ["box", "round", "store", "queue", "actor", "diamond"];
 
@@ -42,7 +31,6 @@ function tokenize(line) {
 }
 
 function opts(tokens) {
-  // key=value tokens after the fixed positional ones
   const o = {};
   for (const t of tokens) {
     const s = t.v;
@@ -52,31 +40,38 @@ function opts(tokens) {
   return o;
 }
 
+function directiveTitle(line) {
+  return line.slice(line.toLowerCase().indexOf("title") + 5).trim().replace(/^"|"$/g, "");
+}
+
+function isArrow(v) { return v === "->" || v === "-->"; }
+
 export function parse(text) {
-  const ir = {
-    title: "",
-    type: "graph",
-    direction: "LR",
-    nodes: [],
-    edges: [],
-    groups: [],
-  };
+  const lines = String(text).split("\n");
+  let type = "graph";
+  for (const raw of lines) {
+    const line = raw.split("#")[0].trim();
+    if (!line) continue;
+    const t = tokenize(line);
+    if (t[0].v.toLowerCase() === "type") type = (t[1] ? t[1].v : "graph").toLowerCase();
+  }
+  return type === "sequence" || type === "seq" ? parseSequence(lines) : parseGraph(lines);
+}
+
+function parseGraph(lines) {
+  const ir = { title: "", type: "graph", direction: "LR", nodes: [], edges: [], groups: [] };
   const nodeIds = new Set();
   const groupIds = new Set();
-  const lines = String(text).split("\n");
 
   for (let ln = 0; ln < lines.length; ln++) {
-    const raw = lines[ln];
-    const line = raw.split("#")[0].trim();
+    const line = lines[ln].split("#")[0].trim();
     if (!line) continue;
     const tokens = tokenize(line);
     const head = tokens[0].v.toLowerCase();
 
-    if (head === "title") {
-      ir.title = line.slice(line.toLowerCase().indexOf("title") + 5).trim().replace(/^"|"$/g, "");
-    } else if (head === "type") {
-      ir.type = (tokens[1] ? tokens[1].v : "graph").toLowerCase();
-    } else if (head === "direction" || head === "dir") {
+    if (head === "title") ir.title = directiveTitle(line);
+    else if (head === "type") { /* already resolved */ }
+    else if (head === "direction" || head === "dir") {
       const d = (tokens[1] ? tokens[1].v : "LR").toUpperCase();
       ir.direction = d === "TB" || d === "TD" ? "TB" : "LR";
     } else if (head === "group") {
@@ -101,7 +96,6 @@ export function parse(text) {
         ir.nodes.push({ id, label, group: o.group || "", shape });
       }
     } else if (head === "edge" || head === "link" || tokens.some((t) => t.v === "->")) {
-      // support "edge a -> b" and the shorthand "a -> b"
       const arrow = tokens.findIndex((t) => t.v === "->");
       if (arrow < 1) throw new Error(`line ${ln + 1}: an edge needs 'a -> b'`);
       const from = tokens[arrow - 1].v;
@@ -114,21 +108,78 @@ export function parse(text) {
     }
   }
 
-  // any node referenced by an edge but never declared becomes a plain node
   for (const e of ir.edges) {
     for (const id of [e.from, e.to]) {
       if (!nodeIds.has(id)) { nodeIds.add(id); ir.nodes.push({ id, label: id, group: "", shape: "box" }); }
     }
   }
-  // drop group references that were never declared
-  for (const nd of ir.nodes) {
-    if (nd.group && !groupIds.has(nd.group)) nd.group = "";
+  for (const nd of ir.nodes) if (nd.group && !groupIds.has(nd.group)) nd.group = "";
+  return ir;
+}
+
+function parseSequence(lines) {
+  const ir = { title: "", type: "sequence", participants: [], steps: [] };
+  const pIds = new Set();
+  const declare = (id, label) => {
+    if (!pIds.has(id)) { pIds.add(id); ir.participants.push({ id, label: label || id }); }
+    else if (label) { const p = ir.participants.find((x) => x.id === id); if (p) p.label = label; }
+  };
+
+  for (let ln = 0; ln < lines.length; ln++) {
+    const line = lines[ln].split("#")[0].trim();
+    if (!line) continue;
+    const tokens = tokenize(line);
+    const head = tokens[0].v.toLowerCase();
+
+    if (head === "title") { ir.title = directiveTitle(line); continue; }
+    if (head === "type" || head === "direction" || head === "dir") continue;
+
+    if (head === "participant" || head === "actor") {
+      if (tokens.length < 2) throw new Error(`line ${ln + 1}: participant needs an id`);
+      const id = tokens[1].v;
+      const label = tokens[2] && tokens[2].quoted ? tokens[2].v : id;
+      declare(id, label);
+      continue;
+    }
+    if (head === "note") {
+      // note over a "text"   or   note a "text"
+      let idx = 1;
+      if (tokens[1] && tokens[1].v.toLowerCase() === "over") idx = 2;
+      const over = tokens[idx] ? tokens[idx].v : "";
+      const label = tokens[idx + 1] && tokens[idx + 1].quoted ? tokens[idx + 1].v : (tokens[idx + 1] ? tokens[idx + 1].v : "");
+      if (!over) throw new Error(`line ${ln + 1}: a note needs a participant`);
+      declare(over);
+      ir.steps.push({ type: "note", over, label });
+      continue;
+    }
+    const arrowPos = tokens.findIndex((t) => isArrow(t.v));
+    if (arrowPos >= 1) {
+      const from = tokens[arrowPos - 1].v;
+      const to = tokens[arrowPos + 1] ? tokens[arrowPos + 1].v : "";
+      if (!to) throw new Error(`line ${ln + 1}: a message needs a target after the arrow`);
+      const dashed = tokens[arrowPos].v === "-->";
+      const label = tokens[arrowPos + 2] && tokens[arrowPos + 2].quoted ? tokens[arrowPos + 2].v : "";
+      declare(from); declare(to);
+      ir.steps.push({ type: "message", from, to, label, dashed, self: from === to });
+      continue;
+    }
+    throw new Error(`line ${ln + 1}: unknown statement '${tokens[0].v}'`);
   }
   return ir;
 }
 
 export function validate(ir) {
   const problems = [];
+  if (ir.type === "sequence") {
+    const ids = new Set(ir.participants.map((p) => p.id));
+    for (const s of ir.steps) {
+      if (s.type === "message") {
+        if (!ids.has(s.from)) problems.push(`message references unknown participant '${s.from}'`);
+        if (!ids.has(s.to)) problems.push(`message references unknown participant '${s.to}'`);
+      }
+    }
+    return problems;
+  }
   const ids = new Set(ir.nodes.map((n) => n.id));
   for (const e of ir.edges) {
     if (!ids.has(e.from)) problems.push(`edge references unknown node '${e.from}'`);

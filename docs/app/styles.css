@@ -88,3 +88,29 @@
 .nq-app { display: flex; flex-direction: column; gap: 10px; height: 100%; }
 .nq-stage { flex: 1; min-height: 0; border: 1px solid var(--nq-line); border-radius: 12px; overflow: hidden; background: var(--nq-bg); }
 .nq-stage .nq-svg { height: 100%; }
+
+/* ---- sequence diagrams ---- */
+.nq-lifeline { stroke: var(--nq-line); stroke-width: 1.4; stroke-dasharray: 4 5; cursor: pointer; }
+.nq-participant { cursor: pointer; }
+.nq-pbox { fill: var(--nq-node-fill); stroke: var(--nq-node-stroke); stroke-width: 1.5; filter: drop-shadow(var(--nq-shadow)); }
+.nq-plabel { fill: var(--nq-node-text); font-size: 13px; font-weight: 500; }
+.nq-msg-path { stroke: var(--nq-edge); stroke-width: 1.7; }
+.nq-msg-path.nq-async { stroke-dasharray: 6 4; }
+.nq-msg text { fill: var(--nq-edge-text); font-size: 11px; }
+.nq-self-label { fill: var(--nq-edge-text); font-size: 11px; }
+.nq-msg-bg { fill: var(--nq-edge-bg); opacity: .82; }
+.nq-note-box { fill: rgba(90,134,255,0.10); stroke: var(--nq-group-stroke); }
+.nq-note text { fill: var(--nq-node-text); font-size: 11px; }
+
+.nq-svg.nq-focusing .nq-participant:not(.nq-hot) { opacity: .24; }
+.nq-svg.nq-focusing .nq-lifeline:not(.nq-hot) { opacity: .14; }
+.nq-svg.nq-focusing .nq-msg:not(.nq-hot) { opacity: .12; }
+.nq-svg.nq-focusing .nq-note { opacity: .3; }
+.nq-participant.nq-hot .nq-pbox { stroke: var(--nq-hot); stroke-width: 2.2; }
+.nq-participant.nq-seed .nq-pbox { stroke: var(--nq-hot); stroke-width: 2.6; }
+.nq-lifeline.nq-hot { stroke: var(--nq-hot); opacity: 1; }
+.nq-msg.nq-hot .nq-msg-path { stroke: var(--nq-hot); stroke-width: 2.4; }
+.nq-svg.nq-searching .nq-participant:not(.nq-match) { opacity: .18; }
+.nq-svg.nq-searching .nq-lifeline { opacity: .14; }
+.nq-svg.nq-searching .nq-msg { opacity: .14; }
+.nq-participant.nq-match .nq-pbox { stroke: var(--nq-hot-2); stroke-width: 2.2; }
