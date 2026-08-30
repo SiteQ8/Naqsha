@@ -1,19 +1,42 @@
 {
   "name": "naqsha",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Turn a short text description of a system into a polished, self contained, interactive HTML diagram. Diagrams as code, zero dependencies.",
   "type": "module",
-  "bin": { "naqsha": "bin/naqsha.mjs" },
+  "bin": {
+    "naqsha": "bin/naqsha.mjs"
+  },
   "scripts": {
     "test": "node --test",
     "example": "node bin/naqsha.mjs example",
     "serve": "node bin/naqsha.mjs serve --open"
   },
-  "keywords": ["diagram", "diagrams-as-code", "architecture", "text-to-diagram", "svg", "visualization", "zero-dependency", "mermaid-alternative"],
+  "keywords": [
+    "diagram",
+    "diagrams-as-code",
+    "architecture",
+    "text-to-diagram",
+    "svg",
+    "visualization",
+    "zero-dependency",
+    "mermaid-alternative"
+  ],
   "author": "SiteQ8",
   "license": "MIT",
   "homepage": "https://siteq8.github.io/Naqsha/",
-  "repository": { "type": "git", "url": "https://github.com/SiteQ8/Naqsha.git" },
-  "files": ["bin/", "docs/app/", "examples/", "README.md", "LICENSE"],
-  "engines": { "node": ">=18" }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiteQ8/Naqsha.git"
+  },
+  "files": [
+    "bin/",
+    "docs/app/",
+    "examples/",
+    "README.md",
+    "LICENSE",
+    "skill/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
 }

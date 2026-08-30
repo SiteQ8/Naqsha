@@ -175,6 +175,10 @@ naqsha version
 
 `render` writes a single HTML file with the diagram, the styles, and the viewer all inlined. Open it in any browser.
 
+## Use it from an agent
+
+Naqsha ships with an agent skill at [skill/SKILL.md](skill/SKILL.md). It teaches an assistant, such as Claude or a coding agent, the source language for all three diagram types and the commands to render a diagram, export a share image, and diff two revisions, so the assistant can turn a request like "diagram this architecture" into a real Naqsha source and a self contained HTML diagram. Point your assistant at that file, or drop it into a tool that loads skills. Every diagram source in the skill is checked against the real engine, so the examples it learns from are known to render.
+
 ## Honest scope
 
 Naqsha draws three diagram types today. The graph type covers architecture maps, service dependencies, pipelines, and anything else that is nodes and directed edges; its layout is a compact layered algorithm in the spirit of the Sugiyama method, a good automatic starting point rather than a hand tuned drawing, so a large or unusual graph may want splitting or a nudge in the source. The sequence type covers calls between participants over time. The state type covers a lifecycle or state machine: states, labelled transitions, an initial state, and final states. The viewer reflects the diagram you wrote, not a running system.
