@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 
 import { parse, validate } from "../docs/app/parse.mjs";
 import { layout } from "../docs/app/layout.mjs";
@@ -145,7 +146,8 @@ test("build returns ir, model, and svg together", () => {
 });
 
 test("version is exported", () => {
-  assert.equal(VERSION, "0.6.0");
+  assert.match(VERSION, /^\d+\.\d+\.\d+$/);
+  assert.equal(VERSION, JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version);
 });
 
 test("RL direction mirrors the LR layout across the width", () => {
