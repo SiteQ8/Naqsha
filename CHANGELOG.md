@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+- `direction RL` for graphs, state machines, and sequence diagrams. Graphs and states mirror the finished left to right layout across the width, so nothing else changes. Sequences place the first participant on the right, messages flow leftwards, and self loops open to the left. Tests cover all three.
+
 ## 0.6.1
 
 Fixed the SVG and PNG exports. The standalone SVG carried the xmlns attribute twice on

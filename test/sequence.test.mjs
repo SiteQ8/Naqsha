@@ -98,3 +98,15 @@ test("build dispatches to the sequence engine", () => {
   assert.equal(model.kind, "sequence");
   assert.ok(svg.includes('data-kind="sequence"'));
 });
+
+test("RL sequence puts the first participant on the right and mirrors messages", () => {
+  const src = "type sequence\ndirection RL\nparticipant a \"Alpha\"\nparticipant b \"Beta\"\na -> b \"hello\"\nb -> b \"think\"";
+  const lr = layoutSequence(parse(src.replace("direction RL\n", "")));
+  const rl = layoutSequence(parse(src));
+  assert.equal(rl.direction, "RL");
+  assert.ok(rl.participants[0].cx > rl.participants[1].cx, "first participant is on the right");
+  const mLr = lr.steps.find((s) => s.type === "message" && !s.self), mRl = rl.steps.find((s) => s.type === "message" && !s.self);
+  assert.ok(Math.abs(mRl.x1 - (rl.width - mLr.x1)) < 0.01 && Math.abs(mRl.x2 - (rl.width - mLr.x2)) < 0.01, "message endpoints mirrored");
+  const svg = renderSequence(rl);
+  assert.ok(svg.includes('text-anchor="end"'), "self loop label anchors to the left in RL");
+});

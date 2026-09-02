@@ -147,3 +147,17 @@ test("build returns ir, model, and svg together", () => {
 test("version is exported", () => {
   assert.equal(VERSION, "0.6.0");
 });
+
+test("RL direction mirrors the LR layout across the width", () => {
+  const lr = layout(parse(SRC));
+  const rl = layout(parse(SRC.replace("direction LR", "direction RL")));
+  assert.equal(rl.direction, "RL");
+  assert.equal(rl.width, lr.width);
+  for (const n of lr.nodes) {
+    const m = rl.nodes.find((x) => x.id === n.id);
+    assert.ok(Math.abs(m.x - (lr.width - n.x - n.w)) < 0.01, "node " + n.id + " mirrored");
+    assert.equal(m.y, n.y);
+  }
+  const first = lr.nodes[0], firstRl = rl.nodes.find((x) => x.id === first.id);
+  assert.ok(firstRl.x > first.x, "the first layer sits on the right in RL");
+});
