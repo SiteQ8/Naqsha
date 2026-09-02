@@ -110,10 +110,10 @@ export function layout(ir) {
   for (const e of ir.edges) if (byId[e.from] && byId[e.to] && e.from !== e.to) out[e.from].push(e.to);
 
   const groupIndex = {};
-  ir.groups.forEach((g, i) => {});
-  const gi = {};
-  ir.groups.forEach((g, i) => (gi[g.id] = i));
-  nodes.forEach((n) => (groupIndex[n.id] = n.group ? gi[n.group] : null));
+  const gi = {}, parentOf = {};
+  ir.groups.forEach((g, i) => { gi[g.id] = i; parentOf[g.id] = g.parent || ""; });
+  const rootOf = (id) => { let cur = id, hops = 0; while (parentOf[cur] && hops < 64) { cur = parentOf[cur]; hops++; } return cur; };
+  nodes.forEach((n) => (groupIndex[n.id] = n.group ? gi[rootOf(n.group)] * 1000 + gi[n.group] : null));
 
   const back = breakCycles(ids, out);
   const { layer, preds, succ } = assignLayers(ids, ir.edges, back);
@@ -220,19 +220,25 @@ export function layout(ir) {
       return { ...e, d, mx, my, id: "e" + i };
     });
 
-  // group boxes: bounding box of members with padding
-  const groups = ir.groups
-    .map((g) => {
-      const members = nodes.filter((n) => n.group === g.id);
-      if (!members.length) return null;
-      const pad = 18;
-      const x0 = Math.min(...members.map((m) => m.x)) - pad;
-      const y0 = Math.min(...members.map((m) => m.y)) - pad - 14;
-      const x1 = Math.max(...members.map((m) => m.x + m.w)) + pad;
-      const y1 = Math.max(...members.map((m) => m.y + m.h)) + pad;
-      return { ...g, x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
-    })
-    .filter(Boolean);
+  // group boxes: the bounding box of a group's own nodes and its child groups, built from the
+  // deepest groups up, so a parent wraps its children with room for every label
+  const depthOf = (g) => { let d = 0, cur = g.parent, hops = 0; const pm = {}; ir.groups.forEach((x) => (pm[x.id] = x.parent || "")); while (cur && hops < 64) { d++; cur = pm[cur]; hops++; } return d; };
+  const boxes = {};
+  const ordered = ir.groups.map((g) => ({ g, depth: depthOf(g) })).sort((a, b) => b.depth - a.depth);
+  for (const { g, depth } of ordered) {
+    const members = nodes.filter((n) => n.group === g.id).map((m) => ({ x: m.x, y: m.y, w: m.w, h: m.h }));
+    const kids = ir.groups.filter((c) => c.parent === g.id && boxes[c.id]).map((c) => boxes[c.id]);
+    const all = members.concat(kids);
+    if (!all.length) continue;
+    const pad = 18;
+    const x0 = Math.min(...all.map((m) => m.x)) - pad;
+    const y0 = Math.min(...all.map((m) => m.y)) - pad - 14;
+    const x1 = Math.max(...all.map((m) => m.x + m.w)) + pad;
+    const y1 = Math.max(...all.map((m) => m.y + m.h)) + pad;
+    boxes[g.id] = { ...g, depth, x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+  // parents first, so children draw on top of them
+  const groups = ir.groups.map((g) => boxes[g.id]).filter(Boolean).sort((a, b) => a.depth - b.depth);
 
   // adjacency for the viewer (reach tracing)
   const adjOut = {}, adjIn = {};
