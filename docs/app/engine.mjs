@@ -16,7 +16,7 @@ import { layoutSequence, renderSequence } from "./sequence.mjs";
 import { renderState, stateToGraph } from "./state.mjs";
 import { diffGraphs, renderDiff } from "./diff.mjs";
 
-export const VERSION = "0.6.0";
+export const VERSION = "0.7.0";
 
 // source text -> { ir, model, svg }, dispatching on the diagram type
 export function build(source) {
