@@ -75,7 +75,7 @@ function parseGraph(lines) {
     else if (head === "type") { /* already resolved */ }
     else if (head === "direction" || head === "dir") {
       const d = (tokens[1] ? tokens[1].v : "LR").toUpperCase();
-      ir.direction = d === "TB" || d === "TD" ? "TB" : "LR";
+      ir.direction = d === "TB" || d === "TD" ? "TB" : d === "RL" ? "RL" : "LR";
     } else if (head === "group") {
       if (tokens.length < 2) throw new Error(`line ${ln + 1}: group needs an id`);
       const id = tokens[1].v;
@@ -120,7 +120,7 @@ function parseGraph(lines) {
 }
 
 function parseSequence(lines) {
-  const ir = { title: "", type: "sequence", participants: [], steps: [] };
+  const ir = { title: "", type: "sequence", direction: "LR", participants: [], steps: [] };
   const pIds = new Set();
   const declare = (id, label) => {
     if (!pIds.has(id)) { pIds.add(id); ir.participants.push({ id, label: label || id }); }
@@ -134,7 +134,8 @@ function parseSequence(lines) {
     const head = tokens[0].v.toLowerCase();
 
     if (head === "title") { ir.title = directiveTitle(line); continue; }
-    if (head === "type" || head === "direction" || head === "dir") continue;
+    if (head === "direction" || head === "dir") { ir.direction = (tokens[1] ? tokens[1].v : "LR").toUpperCase() === "RL" ? "RL" : "LR"; continue; }
+    if (head === "type") continue;
 
     if (head === "participant" || head === "actor") {
       if (tokens.length < 2) throw new Error(`line ${ln + 1}: participant needs an id`);
@@ -192,7 +193,7 @@ function parseState(lines) {
     if (head === "type") continue;
     if (head === "direction" || head === "dir") {
       const d = (tokens[1] ? tokens[1].v : "LR").toUpperCase();
-      ir.direction = d === "TB" || d === "TD" ? "TB" : "LR";
+      ir.direction = d === "TB" || d === "TD" ? "TB" : d === "RL" ? "RL" : "LR";
       continue;
     }
     if (head === "initial" || head === "start") {

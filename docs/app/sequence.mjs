@@ -67,7 +67,15 @@ export function layoutSequence(ir) {
   for (const p of participants) p.lifeBottom = Math.max(lifeBottom, p.lifeTop + STEP);
   const height = Math.round(Math.max(lifeBottom, TOP + HEAD_H + STEP) + MARGIN);
 
-  return { kind: "sequence", title: ir.title, width, height, participants, steps };
+  if (ir.direction === "RL") {
+    for (const p of participants) { p.x = width - p.x - p.w; p.cx = width - p.cx; }
+    for (const s of steps) {
+      if (s.type === "note") s.x = width - s.x - s.w;
+      else if (s.self) s.cx = width - s.cx;
+      else { s.x1 = width - s.x1; s.x2 = width - s.x2; }
+    }
+  }
+  return { kind: "sequence", title: ir.title, direction: ir.direction || "LR", width, height, participants, steps };
 }
 
 export function renderSequence(model, P) {
@@ -100,12 +108,12 @@ export function renderSequence(model, P) {
       continue;
     }
     if (s.self) {
-      const r = 36;
+      const r = model.direction === "RL" ? -36 : 36;
       const d = `M ${s.cx} ${s.y} C ${s.cx + r} ${s.y - 2}, ${s.cx + r} ${s.y + 24}, ${s.cx} ${s.y + 22}`;
       parts.push(
         `<g class="nq-msg" data-msg="${s.id}" data-from="${esc(s.from)}" data-to="${esc(s.to)}">` +
         `<path class="nq-msg-path${s.dashed ? " nq-async" : ""}" stroke="${P.msg}" stroke-width="1.7"${s.dashed ? ' stroke-dasharray="6 4"' : ""} d="${d}" fill="none" marker-end="url(#nq-arrow)"/>` +
-        (s.label ? `<text class="nq-self-label" fill="${P.edgeText}" font-size="11" x="${s.cx + r + 6}" y="${s.y + 14}">${esc(s.label)}</text>` : "") +
+        (s.label ? `<text class="nq-self-label" fill="${P.edgeText}" font-size="11" x="${s.cx + r + (r < 0 ? -6 : 6)}"${r < 0 ? ' text-anchor="end"' : ""} y="${s.y + 14}">${esc(s.label)}</text>` : "") +
         `</g>`
       );
       continue;

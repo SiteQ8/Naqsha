@@ -241,6 +241,10 @@ export function layout(ir) {
     if (byId[e.from] && byId[e.to]) { adjOut[e.from].push(e.to); adjIn[e.to].push(e.from); }
   }
 
+  // right to left: mirror the finished left to right layout across the vertical axis,
+  // so the reading order suits Arabic, Hebrew, and Persian labels
+  if (ir.direction === "RL") mirrorHorizontal(nodes, edges, groups, Wd);
+
   return {
     title: ir.title,
     direction: ir.direction,
@@ -251,4 +255,21 @@ export function layout(ir) {
     height: H,
     adj: { out: adjOut, in: adjIn },
   };
+}
+
+// mirror every x coordinate across the drawing width, paths included
+export function mirrorPath(d, W) {
+  let i = 0;
+  return d.replace(/-?\d+(?:\.\d+)?/g, (m) => {
+    const v = parseFloat(m);
+    const out = i % 2 === 0 ? W - v : v;
+    i++;
+    return String(Math.round(out * 100) / 100);
+  });
+}
+
+export function mirrorHorizontal(nodes, edges, groups, W) {
+  for (const n of nodes) { n.x = W - n.x - n.w; n.cx = n.x + n.w / 2; }
+  for (const g of groups) g.x = W - g.x - g.w;
+  for (const e of edges) { e.d = mirrorPath(e.d, W); e.mx = W - e.mx; }
 }

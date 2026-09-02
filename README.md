@@ -24,6 +24,8 @@ You write this:
 title Payments platform
 direction LR
 
+Use `direction RL` for diagrams that read right to left, which suits Arabic, Hebrew, and Persian labels: graphs and state machines mirror across their width, sequence diagrams put the first participant on the right and their messages flow leftwards.
+
 group edge "Edge"
 group core "Core services"
 
