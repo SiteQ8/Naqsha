@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+
+- Nested groups: `group child "Child" parent=other`. Parents wrap their nodes and child groups with label room, draw first, and keep sibling groups adjacent. Unknown and circular parents are dropped. Tested.
+
 ## 0.7.0
 
 - `direction RL` for graphs, state machines, and sequence diagrams. Graphs and states mirror the finished left to right layout across the width, so nothing else changes. Sequences place the first participant on the right, messages flow leftwards, and self loops open to the left. Tests cover all three.

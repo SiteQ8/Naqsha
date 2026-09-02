@@ -80,7 +80,8 @@ function parseGraph(lines) {
       if (tokens.length < 2) throw new Error(`line ${ln + 1}: group needs an id`);
       const id = tokens[1].v;
       const label = tokens[2] && tokens[2].quoted ? tokens[2].v : id;
-      if (!groupIds.has(id)) { groupIds.add(id); ir.groups.push({ id, label }); }
+      const go = opts(tokens.slice(2));
+      if (!groupIds.has(id)) { groupIds.add(id); ir.groups.push({ id, label, parent: go.parent || "" }); }
     } else if (head === "node") {
       if (tokens.length < 2) throw new Error(`line ${ln + 1}: node needs an id`);
       const id = tokens[1].v;
@@ -116,6 +117,14 @@ function parseGraph(lines) {
     }
   }
   for (const nd of ir.nodes) if (nd.group && !groupIds.has(nd.group)) nd.group = "";
+  // nested groups: a parent must exist, and no group may contain itself through its parents
+  const parentOf = {};
+  ir.groups.forEach((g) => (parentOf[g.id] = g.parent));
+  for (const g of ir.groups) {
+    if (g.parent && (!groupIds.has(g.parent) || g.parent === g.id)) g.parent = "";
+    let cur = g.parent, hops = 0;
+    while (cur && hops < 64) { if (cur === g.id) { g.parent = ""; break; } cur = parentOf[cur]; hops++; }
+  }
   return ir;
 }
 

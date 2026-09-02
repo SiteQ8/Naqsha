@@ -163,3 +163,16 @@ test("RL direction mirrors the LR layout across the width", () => {
   const first = lr.nodes[0], firstRl = rl.nodes.find((x) => x.id === first.id);
   assert.ok(firstRl.x > first.x, "the first layer sits on the right in RL");
 });
+
+test("nested groups: a parent wraps its children, draws first, and keeps siblings together", () => {
+  const src = 'direction LR\ngroup souq "Souq"\ngroup field "Field" parent=souq\ngroup edge "Edge" parent=souq\ngroup cloud "Cloud"\nnode s "Sensor" group=field\nnode g "Gateway" group=field\nnode e "Edge node" group=edge\nnode p "Platform" group=cloud\nedge s -> g\nedge g -> e\nedge e -> p';
+  const m = layout(parse(src));
+  const box = (id) => m.groups.find((x) => x.id === id);
+  const souq = box("souq"), field = box("field"), edge = box("edge");
+  assert.ok(souq && field && edge, "all three boxes exist");
+  for (const c of [field, edge]) assert.ok(c.x >= souq.x && c.y >= souq.y && c.x + c.w <= souq.x + souq.w && c.y + c.h <= souq.y + souq.h, "child inside parent");
+  assert.ok(field.y - souq.y >= 14, "room for the parent's label above the children");
+  assert.equal(m.groups[0].id, "souq", "the parent is drawn first");
+  assert.equal(parse('group a "A" parent=zzz').groups[0].parent, "", "an unknown parent is dropped");
+  assert.equal(parse('group a "A" parent=b\ngroup b "B" parent=a').groups[0].parent === "" || parse('group a "A" parent=b\ngroup b "B" parent=a').groups[1].parent === "", true, "a cycle is broken");
+});

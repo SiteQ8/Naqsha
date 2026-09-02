@@ -26,6 +26,8 @@ direction LR
 
 Use `direction RL` for diagrams that read right to left, which suits Arabic, Hebrew, and Persian labels: graphs and state machines mirror across their width, sequence diagrams put the first participant on the right and their messages flow leftwards.
 
+Groups can nest: `group edge "Edge" parent=souq` puts one group inside another. A parent wraps its own nodes and its child groups with room for every label, parents draw first so children sit on top, and nodes of sibling groups stay together under their common ancestor. Unknown or circular parents are ignored.
+
 group edge "Edge"
 group core "Core services"
 
