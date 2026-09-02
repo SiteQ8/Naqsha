@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1
+
+Fixed the SVG and PNG exports. The standalone SVG carried the xmlns attribute twice on
+its root, which is invalid XML. Browsers rendered it inline but refused to load it as an
+image, so exported SVGs could not be embedded and the PNG export never completed. The
+namespace is now added only when missing, and a regression test covers it.
+
 ## 0.6.0
 
 - An agent skill at skill/SKILL.md. It teaches an assistant the source language
