@@ -20,6 +20,14 @@
     return seen;
   }
 
+  // A standalone SVG needs exactly one xmlns on its root. The rendered element already
+  // carries one when serialized, so add it only when it is missing: a duplicate makes
+  // the file invalid XML, and browsers then refuse to load it as an image, which broke
+  // both the SVG and the PNG export.
+  function ensureSvgNamespace(s) {
+    return /^<svg[^>]*\sxmlns=/.test(s) ? s : s.replace(/^<svg([^>]*)>/, '<svg$1 xmlns="http://www.w3.org/2000/svg">');
+  }
+
   function init(root, adj, opts) {
     opts = opts || {};
     adj = adj || { out: {}, in: {} };
@@ -203,7 +211,7 @@
       const bg = global.getComputedStyle(svg).getPropertyValue("background-color") ||
         global.getComputedStyle(root).getPropertyValue("--nq-bg");
       const rect = '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="' + (bg || "#0f1420").trim() + '"/>';
-      let s = clone.outerHTML.replace(/^<svg([^>]*)>/, '<svg$1 xmlns="http://www.w3.org/2000/svg">');
+      let s = ensureSvgNamespace(clone.outerHTML);
       s = s.replace(/(<g class="nq-viewport)/, rect + "$1");
       return { svg: s, w: w, h: h };
     }
@@ -300,5 +308,5 @@
     return api;
   }
 
-  global.NaqshaViewer = { init: init };
+  global.NaqshaViewer = { init: init, ensureSvgNamespace: ensureSvgNamespace };
 })(typeof window !== "undefined" ? window : this);
