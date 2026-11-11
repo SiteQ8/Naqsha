@@ -181,7 +181,7 @@ naqsha version
 
 ## Use it from an agent
 
-Naqsha ships with an agent skill at [skill/SKILL.md](skill/SKILL.md). It teaches an assistant, such as Claude or a coding agent, the source language for all three diagram types and the commands to render a diagram, export a share image, and diff two revisions, so the assistant can turn a request like "diagram this architecture" into a real Naqsha source and a self contained HTML diagram. Point your assistant at that file, or drop it into a tool that loads skills. Every diagram source in the skill is checked against the real engine, so the examples it learns from are known to render.
+Naqsha ships with an agent skill at [skill/SKILL.md](skill/SKILL.md). It teaches a coding agent the source language for all three diagram types and the commands to render a diagram, export a share image, and diff two revisions, so the assistant can turn a request like "diagram this architecture" into a real Naqsha source and a self contained HTML diagram. Point your assistant at that file, or drop it into a tool that loads skills. Every diagram source in the skill is checked against the real engine, so the examples it learns from are known to render.
 
 ## Honest scope
 
